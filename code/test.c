@@ -39,13 +39,13 @@ static void onmesgfunc(void* param) {
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
 COMMAND_FUNC(PlugTest) {
-  Command_Print("This command registred by testplugin." DLIB_EXT);
+  COMMAND_PRINT("This command registred by testplugin." DLIB_EXT);
 }
 
 COMMAND_FUNC(Atoggle) {
 	// Макрос проверяет была ли запущена команда администратором
   enabled ^= 1;
-	Command_Printf("Announce chat %s", MODE(enabled));
+	COMMAND_PRINTF("Announce chat %s", MODE(enabled));
 }
 
 /*
@@ -58,7 +58,7 @@ COMMAND_FUNC(Atoggle) {
 */
 COMMAND_FUNC(SelfDestroy) {
 	Command_Unregister(ccdata->command);
-	Command_Print("This command can't be called anymore");
+	COMMAND_PRINT("This command can't be called anymore");
 }
 
 /*
@@ -71,7 +71,7 @@ COMMAND_FUNC(SelfDestroy) {
 ** только игрок.
 */
 COMMAND_FUNC(ClientOnly) {
-	Command_Printf("Client-only command called by %s", Client_GetName(ccdata->caller));
+	COMMAND_PRINTF("Client-only command called by %s", Client_GetName(ccdata->caller));
 }
 
 /*
@@ -202,11 +202,8 @@ cs_bool Plugin_Unload(void) {
 	** ибо в скором времени они станут недоступны
 	** и обращение к ним приведёт к падению, а нам
 	** оно не нужно.
-	** P.S. Event_Unregister - это макрос, вызывающий
-	** функцию Event_Unregister_, кастуя переданный
-	** хендлер в cs_uintptr.
 	*/
-	Event_Unregister(EVT_ONMESSAGE, onmesgfunc);
+	EVENT_UNREGISTER(EVT_ONMESSAGE, onmesgfunc);
 	COMMAND_REMOVE(PlugTest);
 	COMMAND_REMOVE(Atoggle);
 	COMMAND_REMOVE(SelfDestroy);
@@ -231,7 +228,7 @@ cs_bool Plugin_Unload(void) {
 	** место, выделенное под поле "name" и саму структуру,
 	** если в ней установлен флаг BDF_DYNALLOCED.
 	** Этот вызов внутри функции Unload играет важную роль,
-	** сравнимую с Command_Unregister и Event_Unregister.
+	** сравнимую с Command_Unregister и EVENT_UNREGISTER.
 	*/
 	Block_UpdateDefinitions();
 
