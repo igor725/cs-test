@@ -29,9 +29,9 @@
 ** в структуру для дальнейшего взаимодействия с ними
 ** более удобного способа я не придумал.
 */
-static void onmesgfunc(void* param) {
+static void onmesgfunc(void *param) {
   if(enabled)
-    *((onMessage*)param)->type = MT_ANNOUNCE;
+    *((onMessage *)param)->type = MT_ANNOUNCE;
 }
 
 /*
@@ -112,7 +112,7 @@ static BlockDef myExtendedBlock = {
 	}}
 };
 
-static BlockDef* myDynBlock = NULL;
+static BlockDef *myDynBlock = NULL;
 
 /*
 * Вызов этого макроса обязателен, он устанавливает
@@ -163,7 +163,7 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
 	** памяти функция вернёт BlockDef, поинтер на BlockDef.
 	** При динамической аллокации структуры происходит также
 	** КОПИРОВАНИЕ имени блока, соответственно, переданный в
-	** функцию const char* не обязан указывать постоянно на
+	** функцию cs_str не обязан указывать постоянно на
 	** имя блока. При динамической аллокации структуре блока
 	** автоматически устанавливается флаг BDF_DYNALLOCED, для
 	** чего он нужен описано в теле Plugin_Unload.
