@@ -82,7 +82,7 @@ COMMAND_FUNC(ClientOnly) {
 */
 
 static BlockDef myBlock = {
-	BLOCK_ID, "My test block", 0,
+	BLOCK_ID, 0, "My test block",
 	{{
 		BDSOL_SOLID,
 		255,
@@ -97,7 +97,7 @@ static BlockDef myBlock = {
 };
 
 static BlockDef myExtendedBlock = {
-	BLOCK_ID_EXT, "My extended test block", BDF_EXTENDED,
+	BLOCK_ID_EXT, BDF_EXTENDED, "My extended test block",
 	{{
 		BDSOL_SWIM,
 		10,
