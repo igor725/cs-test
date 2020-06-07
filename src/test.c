@@ -48,6 +48,11 @@ COMMAND_FUNC(Atoggle) {
 	COMMAND_PRINTF("Announce chat %s", MODE(enabled));
 }
 
+COMMAND_FUNC(Announce) {
+	Client_Chat(Broadcast, MT_ANNOUNCE, ccdata->args);
+	COMMAND_PRINTF("Announcement sent.");
+}
+
 /*
 ** Исходя из названия команды,
 ** даже самому тупенькому будет понятно:
@@ -125,6 +130,7 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
   COMMAND_ADD(PlugTest, CMDF_NONE); // Регистрация обработчика команд.
   COMMAND_ADD(Atoggle, CMDF_OP);
+  COMMAND_ADD(Announce, CMDF_OP);
 	COMMAND_ADD(SelfDestroy, CMDF_NONE);
 	COMMAND_ADD(ClientOnly, CMDF_CLIENT);
 	// Любая Log-функция принимает vararg и работает также, как и printf.
@@ -206,6 +212,7 @@ cs_bool Plugin_Unload(void) {
 	EVENT_UNREGISTER(EVT_ONMESSAGE, onmesgfunc);
 	COMMAND_REMOVE(PlugTest);
 	COMMAND_REMOVE(Atoggle);
+	COMMAND_REMOVE(Announce);
 	COMMAND_REMOVE(SelfDestroy);
 	COMMAND_REMOVE(ClientOnly);
 
