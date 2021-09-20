@@ -45,7 +45,7 @@ COMMAND_FUNC(PlugTest) {
 COMMAND_FUNC(Atoggle) {
 	// Макрос проверяет была ли запущена команда администратором
   enabled ^= 1;
-	COMMAND_PRINTF("Announce chat %s", MODE(enabled));
+	COMMAND_PRINTF("Announce chat %s", enabled ? "&aenabled" : "&cdisabled");
 }
 
 COMMAND_FUNC(Announce) {
@@ -199,7 +199,8 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
   return true;
 }
 
-cs_bool Plugin_Unload(void) {
+cs_bool Plugin_Unload(cs_bool force) {
+	(void)force;
 	/*
 	** Вызов Unregister функций внутри
 	** функции плагина Unload обязателен,
