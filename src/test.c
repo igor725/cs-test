@@ -31,7 +31,7 @@
 */
 static void onmesgfunc(void *param) {
   if(enabled)
-    *((onMessage *)param)->type = MT_ANNOUNCE;
+    *((onMessage *)param)->type = MESSAGE_TYPE_ANNOUNCE;
 }
 
 /*
@@ -49,7 +49,7 @@ COMMAND_FUNC(Atoggle) {
 }
 
 COMMAND_FUNC(Announce) {
-	Client_Chat(Broadcast, MT_ANNOUNCE, ccdata->args);
+	Client_Chat(Broadcast, MESSAGE_TYPE_ANNOUNCE, ccdata->args);
 	COMMAND_PRINTF("Announcement sent.");
 }
 
