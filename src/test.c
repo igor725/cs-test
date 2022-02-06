@@ -31,7 +31,7 @@
 */
 static void onmesgfunc(void *param) {
   if(enabled)
-    *((onMessage *)param)->type = MESSAGE_TYPE_ANNOUNCE;
+	((onMessage *)param)->type = MESSAGE_TYPE_ANNOUNCE;
 }
 
 /*
@@ -128,11 +128,11 @@ Plugin_SetVersion(1)
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
-  COMMAND_ADD(PlugTest, CMDF_NONE); // Регистрация обработчика команд.
-  COMMAND_ADD(Atoggle, CMDF_OP);
-  COMMAND_ADD(Announce, CMDF_OP);
-	COMMAND_ADD(SelfDestroy, CMDF_NONE);
-	COMMAND_ADD(ClientOnly, CMDF_CLIENT);
+  COMMAND_ADD(PlugTest, CMDF_NONE, "Test command"); // Регистрация обработчика команд.
+  COMMAND_ADD(Atoggle, CMDF_OP, "Test command");
+  COMMAND_ADD(Announce, CMDF_OP, "Test command");
+	COMMAND_ADD(SelfDestroy, CMDF_NONE, "Test command");
+	COMMAND_ADD(ClientOnly, CMDF_CLIENT, "Test command");
 	// Любая Log-функция принимает vararg и работает также, как и printf.
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
