@@ -16,6 +16,7 @@
 #include <block.h>
 #include <event.h>
 #include <command.h>
+#include <plugin.h>
 
 // Хедеры плагина
 #include "test.h"
