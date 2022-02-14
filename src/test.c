@@ -226,9 +226,9 @@ cs_bool Plugin_Unload(cs_bool force) {
 	** даже если после Block_Undefine не была вызвана
 	** функция Block_UpdateDefinitions.
 	*/
-	Block_Undefine(BLOCK_ID);
-	Block_Undefine(BLOCK_ID_EXT);
-	Block_Undefine(BLOCK_ID_DYN);
+	Block_Undefine(&myBlock);
+	Block_Undefine(&myExtendedBlock);
+	Block_Undefine(myDynBlock);
 
 	/*
 	** Здесь вызов Block_UpdateDefinitions нужен, чтобы
