@@ -16,10 +16,51 @@
 #include <block.h>
 #include <event.h>
 #include <command.h>
+#include <world.h>
 #include <plugin.h>
 
 // Хедеры плагина
 #include "test.h"
+
+/*
+** Дополнительная информация об
+** энумах, используемых при объявлении
+** структур BlockDef может быть найдена
+** в файле block.h.
+*/
+
+static BlockDef myBlock = {
+	"My test block", FALLBACK_BLOCK_ID, 0,
+	{{
+		BDSOL_SOLID,
+		255,
+		8, 14, 80,
+		false,
+		BDSND_STONE,
+		false,
+		8,
+		BDDRW_OPAQUE,
+		0, 0, 0, 0
+	}}
+};
+
+static BlockDef myExtendedBlock = {
+	"My extended test block", FALLBACK_BLOCK_ID_EXT, BDF_EXTENDED,
+	{{
+		BDSOL_SWIM,
+		10,
+		17, 37, 53, 51, 35, 49,
+		false,
+		BDSND_GRASS,
+		false,
+		10, 10, 10,
+		13, 13, 13,
+		BDDRW_OPAQUE,
+		127, 0, 0, 0
+	}}
+};
+
+static BlockDef *myDynBlock = NULL;
 
 /*
 ** В функцию эвента передаётся первый параметр,
@@ -33,6 +74,46 @@
 static void onmesgfunc(void *param) {
   if(enabled)
 	((onMessage *)param)->type = MESSAGE_TYPE_ANNOUNCE;
+}
+
+void onworldload(World *world) {
+	/*
+	** С помощью дополнения BlockDefinitions
+	** можно регистрировать новые блоки для
+	** клиентов. Фунцкия Block_Define принимает
+	** указатель на структуру BlockDef, в
+	** которую записана информация о блоке,
+	** который необходимо зарегистрировать.
+	** Структура BlockDef содержит 4 поля:
+	** флаги, ID блока, его название и
+	** параметры. Если нужно создать
+	** расширенный блок, то в структуре
+	** следует установить флаг BDF_EXTENDED.
+	** P.S. Если имеется непреодалимое желание
+	** модифицировать имеющийся блок, то после
+	** внесения изменений в его параметры
+	** необходимо установить флаг BDF_UPDATED
+	** (block.flags |= BDF_UPDATED), а затем
+	** вызывать функцию Block_UpdateDefinition.
+	*/
+	Block_Define(world, BLOCK_ID, &myBlock);
+	Block_Define(world, BLOCK_ID_EXT, &myExtendedBlock);
+
+	/*
+	** Структура BlockDef также может
+	** находиться в динамической памяти, для этого
+	** её нужно создать через функцию Block_New, где
+	** аргументами являются имя блока и его флаги
+	** соответственно. После завершения выделения памяти
+	** функция вернёт BlockDef, поинтер на BlockDef. При
+	** динамической аллокации структуры происходит также
+	** КОПИРОВАНИЕ имени блока, соответственно, переданный в
+	** функцию cs_str не обязан указывать постоянно на
+	** имя блока. При динамической аллокации структуре блока
+	** автоматически устанавливается флаг BDF_DYNALLOCED, для
+	** чего он нужен описано в теле Plugin_Unload.
+	*/
+	Block_Define(world, BLOCK_ID_DYN, myDynBlock);
 }
 
 /*
@@ -50,8 +131,8 @@ COMMAND_FUNC(Atoggle) {
 }
 
 COMMAND_FUNC(Announce) {
-	Client_Chat(Broadcast, MESSAGE_TYPE_ANNOUNCE, ccdata->args);
-	COMMAND_PRINTF("Announcement sent.");
+	Client_Chat(CLIENT_BROADCAST, MESSAGE_TYPE_ANNOUNCE, ccdata->args);
+	COMMAND_PRINT("Announcement sent.");
 }
 
 /*
@@ -81,102 +162,26 @@ COMMAND_FUNC(ClientOnly) {
 }
 
 /*
-** Дополнительная информация об
-** энумах, используемых при объявлении
-** структур BlockDef может быть найдена
-** в файле block.h.
-*/
-
-static BlockDef myBlock = {
-	"My test block", BLOCK_ID, 0,
-	{{
-		BDSOL_SOLID,
-		255,
-		8, 14, 80,
-		false,
-		BDSND_STONE,
-		false,
-		8,
-		BDDRW_OPAQUE,
-		0, 0, 0, 0
-	}}
-};
-
-static BlockDef myExtendedBlock = {
-	"My extended test block", BLOCK_ID_EXT, BDF_EXTENDED,
-	{{
-		BDSOL_SWIM,
-		10,
-		17, 37, 53, 51, 35, 49,
-		false,
-		BDSND_GRASS,
-		false,
-		10, 10, 10,
-		13, 13, 13,
-		BDDRW_OPAQUE,
-		127, 0, 0, 0
-	}}
-};
-
-static BlockDef *myDynBlock = NULL;
-
-/*
 * Вызов этого макроса обязателен, он устанавливает
 * не только версию плагина, но и версию используемого
 * API сервера, которая используется при загрузке плагина.
 */
-Plugin_SetVersion(1)
+Plugin_SetVersion(1);
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
-  Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
-  COMMAND_ADD(PlugTest, CMDF_NONE, "Test command"); // Регистрация обработчика команд.
-  COMMAND_ADD(Atoggle, CMDF_OP, "Test command");
-  COMMAND_ADD(Announce, CMDF_OP, "Test command");
+	Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
+	Event_RegisterVoid(EVT_ONWORLDADDED, onworldload);
+	COMMAND_ADD(PlugTest, CMDF_NONE, "Test command"); // Регистрация обработчика команд.
+	COMMAND_ADD(Atoggle, CMDF_OP, "Test command");
+	COMMAND_ADD(Announce, CMDF_OP, "Test command");
 	COMMAND_ADD(SelfDestroy, CMDF_NONE, "Test command");
 	COMMAND_ADD(ClientOnly, CMDF_CLIENT, "Test command");
 	// Любая Log-функция принимает vararg и работает также, как и printf.
-  Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
-  Log_Debug("It's a debug message");
-  Log_Warn("It's a warning message");
+	Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
+	Log_Debug("It's a debug message");
+	Log_Warn("It's a warning message");
 
-	/*
-	** С помощью дополнения BlockDefinitions
-	** можно регистрировать новые блоки для
-	** клиентов. Фунцкия Block_Define принимает
-	** указатель на структуру BlockDef, в
-	** которую записана информация о блоке,
-	** который необходимо зарегистрировать.
-	** Структура BlockDef содержит 4 поля:
-	** флаги, ID блока, его название и
-	** параметры. Если нужно создать
-	** расширенный блок, то в структуре
-	** следует установить флаг BDF_EXTENDED.
-	** P.S. Если имеется непреодалимое желание
-	** модифицировать имеющийся блок, то после
-	** внесения изменений в его параметры
-	** необходимо установить флаг BDF_UPDATED
-	** (block.flags |= BDF_UPDATED), а затем
-	** вызывать функцию Block_UpdateDefinitions.
-	*/
-	Block_Define(&myBlock);
-	Block_Define(&myExtendedBlock);
-
-	/*
-	** Структура BlockDef также может
-	** находиться в динамической памяти, для этого
-	** её нужно создать через функцию Block_New, где
-	** первым аргументами являются ID блока, его имя и
-	** флаги соответственно. После завершения выделения
-	** памяти функция вернёт BlockDef, поинтер на BlockDef.
-	** При динамической аллокации структуры происходит также
-	** КОПИРОВАНИЕ имени блока, соответственно, переданный в
-	** функцию cs_str не обязан указывать постоянно на
-	** имя блока. При динамической аллокации структуре блока
-	** автоматически устанавливается флаг BDF_DYNALLOCED, для
-	** чего он нужен описано в теле Plugin_Unload.
-	*/
-	myDynBlock = Block_New(BLOCK_ID_DYN, "My dynamically allocated block", 0);
-	Block_Define(myDynBlock);
+	myDynBlock = Block_New("My dynamically allocated block", 0);
 
 	/*
 	** Эта функция должна вызываться как после изменений
@@ -187,7 +192,9 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
 	** на сервере нет игроков, так как она производит
 	** манипуляции с полем "flags".
 	*/
-	Block_UpdateDefinitions();
+	Block_UpdateDefinition(&myBlock);
+	Block_UpdateDefinition(&myExtendedBlock);
+	Block_UpdateDefinition(myDynBlock);
 
 	/*
 	** Если функция вернула true, значит
@@ -211,7 +218,7 @@ cs_bool Plugin_Unload(cs_bool force) {
 	** и обращение к ним приведёт к падению, а нам
 	** оно не нужно.
 	*/
-	EVENT_UNREGISTER(EVT_ONMESSAGE, onmesgfunc);
+	Event_Unregister(EVT_ONMESSAGE, (cs_uintptr)onmesgfunc);
 	COMMAND_REMOVE(PlugTest);
 	COMMAND_REMOVE(Atoggle);
 	COMMAND_REMOVE(Announce);
@@ -219,19 +226,19 @@ cs_bool Plugin_Unload(cs_bool force) {
 	COMMAND_REMOVE(ClientOnly);
 
 	/*
-	** Функция Block_Undefine ТОЛЬКО УСТАНАВЛИВАЕТ
+	** Функция Block_UndefineGlobal ТОЛЬКО УСТАНАВЛИВАЕТ
 	** ФЛАГИ, она не производит больше никаких
 	** манипуляций. Тем не менее, блоки, имеющие
 	** флаг BDF_UNDEFINED не будут отправлены игроку
-	** даже если после Block_Undefine не была вызвана
-	** функция Block_UpdateDefinitions.
+	** даже если после Block_UndefineGlobal не была вызвана
+	** функция Block_UpdateDefinition.
 	*/
-	Block_Undefine(&myBlock);
-	Block_Undefine(&myExtendedBlock);
-	Block_Undefine(myDynBlock);
+	Block_UndefineGlobal(&myBlock);
+	Block_UndefineGlobal(&myExtendedBlock);
+	Block_UndefineGlobal(myDynBlock);
 
 	/*
-	** Здесь вызов Block_UpdateDefinitions нужен, чтобы
+	** Здесь вызов Block_UpdateDefinition нужен, чтобы
 	** разослать игрокам пакет RemoveBlockDefinition,
 	** убрать блок из массива, а также чтобы высвободить
 	** место, выделенное под поле "name" и саму структуру,
@@ -239,7 +246,9 @@ cs_bool Plugin_Unload(cs_bool force) {
 	** Этот вызов внутри функции Unload играет важную роль,
 	** сравнимую с Command_Unregister и EVENT_UNREGISTER.
 	*/
-	Block_UpdateDefinitions();
+	Block_UpdateDefinition(&myBlock);
+	Block_UpdateDefinition(&myExtendedBlock);
+	Block_UpdateDefinition(myDynBlock);
 
 	/*
 	** Возврат true говорит о том, что
