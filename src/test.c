@@ -61,6 +61,7 @@ static BlockDef myExtendedBlock = {
 };
 
 static BlockDef *myDynBlock = NULL;
+static cs_bool enabled = false;
 
 /*
  * В функцию эвента передаётся первый параметр,
@@ -218,7 +219,7 @@ cs_bool Plugin_Unload(cs_bool force) {
 	 * и обращение к ним приведёт к падению, а нам
 	 * оно не нужно.
 	*/
-	Event_Unregister(EVT_ONMESSAGE, (cs_uintptr)onmesgfunc);
+	Event_Unregister(EVT_ONMESSAGE, (void *)onmesgfunc);
 	COMMAND_REMOVE(PlugTest);
 	COMMAND_REMOVE(Atoggle);
 	COMMAND_REMOVE(Announce);
